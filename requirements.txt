@@ -1,0 +1,7 @@
+flask
+flask_restful
+Flask-SqlAlchemy
+sqlalchemy-migrate
+flask-wtf
+coverage
+flask-login
