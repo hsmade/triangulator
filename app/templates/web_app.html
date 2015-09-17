@@ -80,6 +80,13 @@
     {% endif %}
 {% endif %}
 {% if searches %}
+    <form action="/searches" method="post">
+        Create a new search:<br />
+        Frequency: <input name="frequency"> MHz<br />
+        Description: <textarea name="description"></textarea><br />
+        <input type="submit">
+    </form>
+
     <ul>
     {% for search in searches: %}
         <li><a href="/?search={{search['id']}}">{{search['frequency']}}MHz: {{search['description']}}</a></li>
