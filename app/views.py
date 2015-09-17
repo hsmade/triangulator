@@ -143,8 +143,10 @@ def web_app():
                     sum([measurement['longitude'] for measurement in search_dict['measurements']]) / len(search_dict['measurements'])
                 average_latitude = \
                     sum([measurement['latitude'] for measurement in search_dict['measurements']]) / len(search_dict['measurements'])
-    return render_template('web_app.html', search=search_dict,
-                           average_longitude=average_longitude, average_latitude=average_latitude)
+        return render_template('web_app.html', search=search_dict,
+                               average_longitude=average_longitude, average_latitude=average_latitude)
+    else:
+        return render_template('web_app.html', searches=models.Search.query.all())
 
 
 @app.route('/users/login', methods=['post'])
@@ -164,3 +166,28 @@ def login_check():
         return 'Invalid password', 500
 
 
+@app.route('/login_or_register')
+def login_or_register():
+    """
+    :return: register / login page
+    """
+    return '''
+    <a href="{login}">Login</a>
+    <a href="{register}">Register</a>
+    '''.format(login=url_for("login"), register=url_for("register"))
+
+
+@app.route('/register')
+def register():
+    """
+    Register
+    :return:
+    """
+    return '''
+    <form action="{users}" method="post">
+    Call: <input name="call"><br />
+    e-Mail: <input name="email"><br />
+    Password: <input name="password" type="password"><br />
+    <input type="submit">
+    </form>
+    '''.format(users="/users")

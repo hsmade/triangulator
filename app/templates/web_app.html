@@ -79,5 +79,12 @@
         </script>
     {% endif %}
 {% endif %}
+{% if searches %}
+    <ul>
+    {% for search in searches: %}
+        <li><a href="/?search={{search['id']}}">{{search['frequency']}}MHz: {{search['description']}}</a></li>
+    {% endfor %}
+    </ul>
+{% endif %}
 </body>
 </html>
