@@ -3,14 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <title>web app</title>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 </head>
 <body>
 {% if search: %}
-<ul>
-    <li>{{search['frequency']}}</li>
-    <li>{{search['description']}}</li>
-</ul>
-    {{search}}
+    <p>Search on {{search['frequency']}} MHz. {{search['description']}}</p>
+    <table>
+        <tr>
+            <td>
+                <form action="/searches/{{search['id']}}" method="post">
+                    <script language="JavaScript">
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(showPosition);
+                        };
+                        function showPosition(position) {
+                            $("#longitude").val(position.coords.longitude);
+                            $("#latitude").val(position.coords.latitude);
+                        }
+                    </script>
+                    Send your measurement here:<br />
+                    Heading: <input name="heading"><br />
+                    Strength: <input name="strength"> (number 1-9)<br />
+                    Longitude: <input id="longitude" name="longitude"><br />
+                    Latitude: <input id="latitude" name="latitude"><br />
+                    <input name="search" value="{{search['id']}}" type="hidden"><br />
+                    <input type="submit">
+                </form>
+            </td>
+            <td>&nbsp;</td>
+            <td>
+                <form action="/searches" method="post">
+                    Create a new search:<br />
+                    Frequency: <input name="frequency"> MHz<br />
+                    Description: <textarea name="description"></textarea><br />
+                    <input type="submit">
+                </form>
+            </td>
+        </tr>
+    </table>
+    {% if search['measurements'] %}
+        <div id="map-canvas" style="width: 100%; height: 500px; margin: 0px; padding: 0px;"></div>
+        <script language="JavaScript" src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+        <script language="JavaScript">
+        var map;
+        function initialize() {
+            var mapOptions = {
+                zoom: 9,
+                center: new google.maps.LatLng({{average_latitude}},{{average_longitude}})
+            };
+            map = new google.maps.Map(document.getElementById('map-canvas'),
+                mapOptions);
+            var infowindow = new google.maps.InfoWindow();
+
+        {% for measurement in search['measurements']: %}
+            var lineCoordinates = [];
+            lineCoordinates.push(new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}));
+            lineCoordinates.push(new google.maps.LatLng({{measurement['endpoint_latitude']}}, {{measurement['endpoint_longitude']}}));
+            marker = new google.maps.Marker({
+                position: new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}),
+                map: map
+            });
+
+            var tripPath = new google.maps.Polyline({
+                path: lineCoordinates,
+                geodesic: true,
+                strokeColor: '#000',
+                strokeOpacity: 1.0,
+                strokeWeight: 2
+            });
+
+            tripPath.setMap(map);
+        {% endfor %}
+        }
+        initialize();
+        </script>
+    {% endif %}
 {% endif %}
 </body>
 </html>

@@ -1,5 +1,5 @@
 from app import db
-
+import math
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -49,21 +49,33 @@ class Measurement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     search_id = db.Column(db.Integer, db.ForeignKey('search.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    heading = db.Column(db.Integer)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
     strength = db.Column(db.Integer)
-    location = db.Column(db.String)
+    heading = db.Column(db.Float)
     timestamp = db.Column(db.DateTime)
 
     def __repr__(self):
         return '<Measurement {}/{}>'.format(self.heading, self.strength)
 
     def to_dict(self):
+        R = 6378.1  # Radius of the Earth
+        bearing = math.radians(self.heading)
+        d = 50  # distance in KM
+        lat_start = math.radians(self.latitude)
+        lon_start = math.radians(self.longitude)
+        lat_end = math.asin( math.sin(lat_start)*math.cos(d/R) +
+     math.cos(lat_start)*math.sin(d/R)*math.cos(bearing))
+        lon_end = lon_start + math.atan2(math.sin(bearing)*math.sin(d/R)*math.cos(lat_start),
+             math.cos(d/R)-math.sin(lat_start)*math.sin(lat_end))
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'heading': self.heading,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
             'strength': self.strength,
-            'location': self.location,
+            'heading': self.heading,
             'timestamp': str(self.timestamp),
-            'endpoint': ''  # FIXME calculate end point of line by location and heading
+            'endpoint_latitude': str(math.degrees(lat_end)),
+            'endpoint_longitude': str(math.degrees(lon_end)),
         }

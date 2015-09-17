@@ -10,9 +10,11 @@ search_parser.add_argument('frequency')
 search_parser.add_argument('description')
 
 measurement_parser = reqparse.RequestParser()
-measurement_parser.add_argument('location')
+measurement_parser.add_argument('longitude')
+measurement_parser.add_argument('latitude')
 measurement_parser.add_argument('heading')
 measurement_parser.add_argument('strength')
+measurement_parser.add_argument('search')
 
 register_parser = reqparse.RequestParser()
 register_parser.add_argument('call')
@@ -73,7 +75,7 @@ class SearchList(Resource):
                                    start_time=datetime.now())
         db.session.add(new_search)
         db.session.commit()
-        return new_search.id, 201
+        return redirect(url_for('web_app', search=new_search.id))
 
 
 class Search(Resource):
@@ -91,7 +93,7 @@ class Search(Resource):
             return search.to_dict(), 200
 
     @login_required
-    def put(self, id):
+    def post(self, id):
         """
         Submit new measurement
         :param id: search ID
@@ -102,11 +104,12 @@ class Search(Resource):
                                              heading=args.heading,
                                              strength=args.strength,
                                              timestamp=datetime.now(),
-                                             location=args.location,
+                                             latitude=args.latitude,
+                                             longitude=args.longitude,
                                              user_id=current_user.get_id())
         db.session.add(new_measurement)
         db.session.commit()
-        return new_measurement.id
+        return redirect(url_for('web_app', search=args.search))
 
 api.add_resource(User, '/users')
 api.add_resource(SearchList, '/searches')
@@ -129,11 +132,19 @@ def login():
 def web_app():
     search_id = request.args.get('search')
     search_dict = False
+    average_longitude = 0
+    average_latitude = 0
     if search_id:
         search = models.Search.query.get(search_id)
         if search:
             search_dict = search.to_dict()
-    return render_template('web_app.html', search=search_dict)
+            if search_dict['measurements']:
+                average_longitude = \
+                    sum([measurement['longitude'] for measurement in search_dict['measurements']]) / len(search_dict['measurements'])
+                average_latitude = \
+                    sum([measurement['latitude'] for measurement in search_dict['measurements']]) / len(search_dict['measurements'])
+    return render_template('web_app.html', search=search_dict,
+                           average_longitude=average_longitude, average_latitude=average_latitude)
 
 
 @app.route('/users/login', methods=['post'])
