@@ -27,6 +27,7 @@ def get_user_by_name(call):
     if len(user) == 1:
         return user[0]
     else:
+        print user
         return None
 
 
@@ -49,9 +50,11 @@ class User(Resource):
 
     @login_required
     def get(self):
-        users = models.User.query.all()
-        return [user.call for user in users]
-
+        if current_user.call == 'admin':
+            users = models.User.query.all()
+            return [(user.call, user.email) for user in users]
+        else:
+            return 'Not found', 404
 
 class SearchList(Resource):
     @login_required
@@ -144,7 +147,8 @@ def web_app():
                 average_latitude = \
                     sum([measurement['latitude'] for measurement in search_dict['measurements']]) / len(search_dict['measurements'])
         return render_template('web_app.html', search=search_dict,
-                               average_longitude=average_longitude, average_latitude=average_latitude)
+                               average_longitude=average_longitude,
+                               average_latitude=average_latitude,)
     else:
         return render_template('web_app.html', searches=models.Search.query.all())
 
