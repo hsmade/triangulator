@@ -1,6 +1,7 @@
 from app import db
 import math
 
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     call = db.Column(db.String(64), index=True, unique=True)
@@ -62,12 +63,12 @@ class Measurement(db.Model):
         R = 6378.1  # Radius of the Earth
         bearing = math.radians(self.heading)
         d = 50  # distance in KM
-        lat_start = math.radians(self.latitude)
-        lon_start = math.radians(self.longitude)
+        lat_start = math.radians(float(self.latitude))
+        lon_start = math.radians(float(self.longitude))
         lat_end = math.asin( math.sin(lat_start)*math.cos(d/R) +
-     math.cos(lat_start)*math.sin(d/R)*math.cos(bearing))
+            math.cos(lat_start)*math.sin(d/R)*math.cos(bearing))
         lon_end = lon_start + math.atan2(math.sin(bearing)*math.sin(d/R)*math.cos(lat_start),
-             math.cos(d/R)-math.sin(lat_start)*math.sin(lat_end))
+            math.cos(d/R)-math.sin(lat_start)*math.sin(lat_end))
         return {
             'id': self.id,
             'user_id': self.user_id,

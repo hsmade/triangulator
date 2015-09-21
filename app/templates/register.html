@@ -3,12 +3,14 @@
 <link href="{{url_for('static', filename='login.css')}}" rel="stylesheet">
 {% endblock %}
 {% block content %}
-  <form action="{{url_for('login_check')}}" method="post" class="form-signin">
-    <h2 class="form-signin-heading">Please sign in</h2>
+  <form action="/users" method="post" class="form-signin">
+    <h2 class="form-signin-heading">Please register</h2>
     <label for="inputCall" class="sr-only">Call sign</label>
     <input type="text" name="call" id="inputCall" class="form-control" placeholder="Call sign" required autofocus>
     <label for="inputPassword" class="sr-only">Password</label>
     <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
+    <label for="inputEmail" class="sr-only">e-Mail address</label>
+    <input type="email" name="email" id="inputEmail" class="form-control" placeholder="e-Mail" required>
     <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
   </form>
 {% endblock %}

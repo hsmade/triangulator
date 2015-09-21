@@ -1,83 +1,145 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>web app</title>
-    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Triangulator{% endblock %}
+{% block content %}
+
+{% if searches %}
+<div class="dropdown">
+  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownSearches" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    Current searches
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdownSearches">
+    {% for search in searches: %}
+      <li><a href="/?search={{search['id']}}">{{search['frequency']}}MHz: {{search['description']}}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
 {% if search: %}
-    <p>Search on {{search['frequency']}} MHz. {{search['description']}}</p>
-        <form action="/searches/{{search['id']}}" method="post">
-            <script language="JavaScript">
+  <ul><li>Search on {{search['frequency']}} MHz. {{search['description']}}</li></ul>
+{% endif %}
+
+<div id="buttons" style="position: relative;">
+  <div id="new_search" style="position:absolute; right:0;">
+    <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#searchModal">
+      Create new search
+    </button>
+
+    <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="searchModalLabel">Create new search</h4>
+          </div>
+          <form role="form" action="/searches" method="post">
+            <div class="modal-body">
+              <label for="frequency">Frequency:</label>
+              <input name="frequency" type="text" class="form-control" id="frequency" placeholder="144.975" required>
+              <label for="description">Description:</label>
+              <input name="description" type="text" class="form-control" id="description" required>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-default">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% if search: %}
+  <div id="new_measurement">
+    <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#measurementModal">
+      Submit new measurement
+    </button>
+
+    <div class="modal fade" id="measurementModal" tabindex="-1" role="dialog" aria-labelledby="measurementModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="measurementModalLabel">Submit measurement</h4>
+          </div>
+          <form role="form" action="/searches/{{search['id']}}" method="post">
+            <div class="modal-body">
+              <label for="heading">Heading:</label>
+              <input name="heading" type="text" class="form-control" id="heading" placeholder="0-360" required>
+              <label for="strength">Strength:</label>
+              <input name="strength" type="text" class="form-control" id="strength" placeholder="1-9" required>
+              <label for="longitude">Longitude:</label>
+              <input name="longitude" type="text" class="form-control" id="longitude" required>
+              <label for="latitude">Latitude:</label>
+              <input name="latitude" type="text" class="form-control" id="latitude" required>
+              <input type="hidden" name="search" value="{{search['id']}}">
+              <script language="JavaScript">
                 if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(showPosition);
+                  navigator.geolocation.getCurrentPosition(showPosition);
                 };
                 function showPosition(position) {
-                    $("#longitude").val(position.coords.longitude);
-                    $("#latitude").val(position.coords.latitude);
+                  console.log(position);
+                  $("#longitude").val(position.coords.longitude);
+                  $("#latitude").val(position.coords.latitude);
                 }
-            </script>
-            Send your measurement here:<br />
-            Heading: <input name="heading"><br />
-            Strength: <input name="strength"> (number 1-9)<br />
-            Longitude: <input id="longitude" name="longitude"><br />
-            Latitude: <input id="latitude" name="latitude"><br />
-            <input name="search" value="{{search['id']}}" type="hidden"><br />
-            <input type="submit">
-        </form>
-    {% if search['measurements'] %}
-        <div id="map-canvas" style="width: 100%; height: 500px; margin: 0px; padding: 0px;"></div>
-        <script language="JavaScript" src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
-        <script language="JavaScript">
-        var map;
-        function initialize() {
-            var mapOptions = {
-                zoom: 9,
-                center: new google.maps.LatLng({{average_latitude}},{{average_longitude}})
-            };
-            map = new google.maps.Map(document.getElementById('map-canvas'),
-                mapOptions);
-            var infowindow = new google.maps.InfoWindow();
-
-        {% for measurement in search['measurements']: %}
-            var lineCoordinates = [];
-            lineCoordinates.push(new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}));
-            lineCoordinates.push(new google.maps.LatLng({{measurement['endpoint_latitude']}}, {{measurement['endpoint_longitude']}}));
-            marker = new google.maps.Marker({
-                position: new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}),
-                map: map
-            });
-
-            var tripPath = new google.maps.Polyline({
-                path: lineCoordinates,
-                geodesic: true,
-                strokeColor: '#000',
-                strokeOpacity: 1.0,
-                strokeWeight: 2
-            });
-
-            tripPath.setMap(map);
-        {% endfor %}
-        }
-        initialize();
-        </script>
-    {% endif %}
+              </script>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-default">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script language="JavaScript">
+      $('#measurementModal').on('shown.bs.modal', function () {
+        $('#measurementInput').focus()
+      })
+    </script>
+  </div>
 {% endif %}
-{% if searches %}
-    <ul>
-    {% for search in searches: %}
-        <li><a href="/?search={{search['id']}}">{{search['frequency']}}MHz: {{search['description']}}</a></li>
-    {% endfor %}
-    </ul>
-{% endif %}
-<div style="position:absolute; top:0; right:0;">
-    <form action="/searches" method="post">
-        Create a new search:<br />
-        Frequency: <input name="frequency"> MHz<br />
-        Description: <textarea name="description"></textarea><br />
-        <input type="submit">
-    </form>
 </div>
-</body>
-</html>
+
+{% if search %}
+  {% if search['measurements'] %}
+    <div id="map-canvas" style="width: 100%; height: 500px; margin: 0px; padding: 0px;"></div>
+    <script language="JavaScript" src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <script language="JavaScript">
+    var map;
+    function initialize() {
+        var mapOptions = {
+            zoom: 9,
+            center: new google.maps.LatLng({{average_latitude}},{{average_longitude}})
+        };
+        map = new google.maps.Map(document.getElementById('map-canvas'),
+            mapOptions);
+        var infowindow = new google.maps.InfoWindow();
+
+    {% for measurement in search['measurements']: %}
+        var lineCoordinates = [];
+        lineCoordinates.push(new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}));
+        lineCoordinates.push(new google.maps.LatLng({{measurement['endpoint_latitude']}}, {{measurement['endpoint_longitude']}}));
+        marker = new google.maps.Marker({
+            position: new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}),
+            map: map
+        });
+
+        var tripPath = new google.maps.Polyline({
+            path: lineCoordinates,
+            geodesic: true,
+            strokeColor: '#000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+        });
+
+        tripPath.setMap(map);
+    {% endfor %}
+    }
+    initialize();
+    </script>
+  {% endif %}
+{% endif %}
+
+{% endblock %}

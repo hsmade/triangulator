@@ -1,23 +1,66 @@
-<html>
-  <head>
-    {% if title %}
-    <title>{{ title }} - microblog</title>
-    {% else %}
-    <title>microblog</title>
-    {% endif %}
-  </head>
-  <body>
-    <div>Microblog: <a href="/index">Home</a></div>
-    <hr>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <ul>
-    {% for message in messages %}
-        <li>{{ message }} </li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %}</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      $('[data-toggle="popover"]').popover();
+    });
+  </script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="container">
+     <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+           <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                 <span class="sr-only">Toggle navigation</span>
+                 <span class="icon-bar"></span>
+                 <span class="icon-bar"></span>
+                 <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="/">Triangulator</a>
+           </div>
+           <div id="navbar" class="collapse navbar-collapse">
+              <ul class="nav navbar-nav">
+                 <li class="active"><a href="/">Home</a></li>
+                 <li><a href="#" title="About" data-toggle="popover" data-placement="bottom" data-content="Triangulator, by PH7Wim">About</a></li>
+                 <li><a href="#" title="Contact" data-toggle="popover" data-placement="bottom" data-content="ph7wim@ph7wim.com">Contact</a></li>
+              </ul>
+              <div class="dropdown navbar-right">
+                 <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                    {{user}}
+                    <span class="caret"></span>
+                 </button>
+                 <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                    {% if user != 'Not logged in': %}
+                    <li><a href="{{url_for('logout')}}">Logout</a></li>
+                    {% else: %}
+                    <li><a href="{{url_for('register')}}">Register</a></li>
+                    <li><a href="{{url_for('login')}}">Login</a></li>
+                    {% endif %}
+                 </ul>
+              </div>
+           </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    <div style="position: relative" class="jumbotron">
+      <br />
+      {% block content %}
+      {% endblock %}
+    </div>
+  </div>
+</body>
 </html>

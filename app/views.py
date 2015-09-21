@@ -3,7 +3,7 @@ from app import app, api, db, models
 from flask_restful import reqparse, abort, Api, Resource
 from flask import Flask, render_template, url_for, request, redirect
 from hashlib import md5
-from flask.ext.login import login_user, login_required, current_user
+from flask.ext.login import login_user, login_required, current_user, logout_user
 
 search_parser = reqparse.RequestParser()
 search_parser.add_argument('frequency')
@@ -46,6 +46,8 @@ class User(Resource):
             db.session.commit()
         except Exception as e:
             return str(e), 500
+
+        login_user(new_user)
         return redirect(url_for('web_app'))
 
     @login_required
@@ -55,6 +57,7 @@ class User(Resource):
             return [(user.call, user.email) for user in users]
         else:
             return 'Not found', 404
+
 
 class SearchList(Resource):
     @login_required
@@ -104,11 +107,11 @@ class Search(Resource):
         """
         args = measurement_parser.parse_args()
         new_measurement = models.Measurement(search_id=id,
-                                             heading=args.heading,
-                                             strength=args.strength,
+                                             heading=float(args.heading),
+                                             strength=int(args.strength),
                                              timestamp=datetime.now(),
-                                             latitude=args.latitude,
-                                             longitude=args.longitude,
+                                             latitude=float(args.latitude),
+                                             longitude=float(args.longitude),
                                              user_id=current_user.get_id())
         db.session.add(new_measurement)
         db.session.commit()
@@ -121,18 +124,18 @@ api.add_resource(Search, '/searches/<id>')
 
 @app.route('/login')
 def login():
-    return '''
-    <form action="/users/login" method="post">
-            <p>Username: <input name="username" type="text"></p>
-            <p>Password: <input name="password" type="password"></p>
-            <input type="submit">
-    </form>
-    '''
+    """
+    Login page
+    """
+    return render_template('login.html', user='Not logged in')
 
 
 @app.route('/')
 @login_required
 def web_app():
+    """
+    Main app page
+    """
     search_id = request.args.get('search')
     search_dict = False
     average_longitude = 0
@@ -148,14 +151,20 @@ def web_app():
                     sum([measurement['latitude'] for measurement in search_dict['measurements']]) / len(search_dict['measurements'])
         return render_template('web_app.html', search=search_dict,
                                average_longitude=average_longitude,
-                               average_latitude=average_latitude,)
+                               average_latitude=average_latitude,
+                               searches=models.Search.query.all(),
+                               user=current_user.call)
     else:
-        return render_template('web_app.html', searches=models.Search.query.all())
+        return render_template('web_app.html', searches=models.Search.query.all(),
+                               user=current_user.call)
 
 
 @app.route('/users/login', methods=['post'])
 def login_check():
-    user = get_user_by_name(request.form['username'])
+    """
+    For flask-login, verifies login
+    """
+    user = get_user_by_name(request.form['call'])
     if user:
         print 'found user: {}'.format(user)
     else:
@@ -173,25 +182,23 @@ def login_check():
 @app.route('/login_or_register')
 def login_or_register():
     """
-    :return: register / login page
+    base page, not authenticated
     """
-    return '''
-    <a href="{login}">Login</a>
-    <a href="{register}">Register</a>
-    '''.format(login=url_for("login"), register=url_for("register"))
+    return render_template('base.html', user='Not logged in')
 
 
 @app.route('/register')
 def register():
     """
-    Register
-    :return:
+    Register a new user
     """
-    return '''
-    <form action="{users}" method="post">
-    Call: <input name="call"><br />
-    e-Mail: <input name="email"><br />
-    Password: <input name="password" type="password"><br />
-    <input type="submit">
-    </form>
-    '''.format(users="/users")
+    return render_template('register.html', user='Not logged in')
+
+
+@app.route('/logout')
+def logout():
+    """
+    Logout
+    """
+    logout_user()
+    return redirect(url_for('web_app'))
