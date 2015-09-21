@@ -38,14 +38,21 @@
                  <li class="active"><a href="/">Home</a></li>
                  <li><a href="#" title="About" data-toggle="popover" data-placement="bottom" data-content="Triangulator, by PH7Wim">About</a></li>
                  <li><a href="#" title="Contact" data-toggle="popover" data-placement="bottom" data-content="ph7wim@ph7wim.com">Contact</a></li>
+                 {% if user.call == 'admin': %}
+                 <li><a href="/admin/users">Users</a></li>
+                 {% endif %}
               </ul>
               <div class="dropdown navbar-right">
                  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                    {{user}}
+                    {% if user: %}
+                        {{user.call}}
+                    {% else: %}
+                        Not logged in
+                    {% endif %}
                     <span class="caret"></span>
                  </button>
                  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                    {% if user != 'Not logged in': %}
+                    {% if user: %}
                     <li><a href="{{url_for('logout')}}">Logout</a></li>
                     {% else: %}
                     <li><a href="{{url_for('register')}}">Register</a></li>

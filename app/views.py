@@ -4,6 +4,7 @@ from flask_restful import reqparse, abort, Api, Resource
 from flask import Flask, render_template, url_for, request, redirect
 from hashlib import md5
 from flask.ext.login import login_user, login_required, current_user, logout_user
+from functools import wraps
 
 search_parser = reqparse.RequestParser()
 search_parser.add_argument('frequency')
@@ -20,6 +21,15 @@ register_parser = reqparse.RequestParser()
 register_parser.add_argument('call')
 register_parser.add_argument('password')
 register_parser.add_argument('email')
+
+
+def requires_admin(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if current_user and current_user.call != 'admin':
+            return 'Not allowed', 404
+        return f(*args, **kwargs)
+    return wrapper
 
 
 def get_user_by_name(call):
@@ -50,13 +60,11 @@ class User(Resource):
         login_user(new_user)
         return redirect(url_for('web_app'))
 
+    @requires_admin
     @login_required
     def get(self):
-        if current_user.call == 'admin':
-            users = models.User.query.all()
-            return [(user.call, user.email) for user in users]
-        else:
-            return 'Not found', 404
+        users = models.User.query.all()
+        return [(user.call, user.email) for user in users]
 
 
 class SearchList(Resource):
@@ -127,7 +135,7 @@ def login():
     """
     Login page
     """
-    return render_template('login.html', user='Not logged in')
+    return render_template('login.html', user=None)
 
 
 @app.route('/')
@@ -153,10 +161,10 @@ def web_app():
                                average_longitude=average_longitude,
                                average_latitude=average_latitude,
                                searches=models.Search.query.all(),
-                               user=current_user.call)
+                               user=current_user)
     else:
         return render_template('web_app.html', searches=models.Search.query.all(),
-                               user=current_user.call)
+                               user=current_user)
 
 
 @app.route('/users/login', methods=['post'])
@@ -169,6 +177,8 @@ def login_check():
         print 'found user: {}'.format(user)
     else:
         return 'Invalid username', 404
+    if not user.is_active():
+        return 'User disabled', 500
     password = md5()
     password.update(request.form['password'])
     if user.password_hash == password.hexdigest():
@@ -184,7 +194,7 @@ def login_or_register():
     """
     base page, not authenticated
     """
-    return render_template('base.html', user='Not logged in')
+    return render_template('base.html', user=None)
 
 
 @app.route('/register')
@@ -192,7 +202,7 @@ def register():
     """
     Register a new user
     """
-    return render_template('register.html', user='Not logged in')
+    return render_template('register.html', user=None)
 
 
 @app.route('/logout')
@@ -202,3 +212,45 @@ def logout():
     """
     logout_user()
     return redirect(url_for('web_app'))
+
+
+@app.route('/admin/users')
+@requires_admin
+def user_list():
+    return render_template('users.html', users=models.User.query.all(), user=current_user)
+
+
+@app.route('/admin/users/<id>/enable')
+@requires_admin
+def user_enable(id):
+    user = models.User.query.get(id)
+    if not user:
+        return 'User not found', 404
+    else:
+        user.enabled = True
+        db.session.commit()
+        return redirect(url_for('user_list'))
+
+
+@app.route('/admin/users/<id>/disable')
+@requires_admin
+def user_disable(id):
+    user = models.User.query.get(id)
+    if not user:
+        return 'User not found', 404
+    else:
+        user.enabled = False
+        db.session.commit()
+        return redirect(url_for('user_list'))
+
+
+@requires_admin
+@app.route('/admin/users/<id>/delete')
+def user_delete(id):
+    user = models.User.query.get(id)
+    if not user:
+        return 'User not found', 404
+    else:
+        db.session.delete(user)
+        db.session.commit()
+        return redirect(url_for('user_list'))

@@ -8,7 +8,7 @@ class User(db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(32))
     measurements = db.relationship('Measurement', backref='submitter', lazy='dynamic')
-    enabled = db.Column(db.Integer)
+    enabled = db.Column(db.Boolean, default=True)
 
     def __repr__(self):
         return '<User {}>'.format(self.call)
