@@ -62,7 +62,7 @@ class Measurement(db.Model):
     def to_dict(self):
         R = 6378.1  # Radius of the Earth
         bearing = math.radians(self.heading)
-        d = 50  # distance in KM
+        d = 250  # distance in KM
         lat_start = math.radians(float(self.latitude))
         lon_start = math.radians(float(self.longitude))
         lat_end = math.asin( math.sin(lat_start)*math.cos(d/R) +
