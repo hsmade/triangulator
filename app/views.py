@@ -194,7 +194,7 @@ def login_or_register():
     """
     base page, not authenticated
     """
-    return render_template('base.html', user=None)
+    return render_template('login_or_register.html', user=None)
 
 
 @app.route('/register')
