@@ -1,0 +1,11 @@
+@media (min-width: 768px) {
+  .dropdown-menu {
+    float: none;
+  }
+}
+@media (max-width: 767px) {
+  .dropdown-menu {
+    position: static;
+    float: none;
+  }
+}
