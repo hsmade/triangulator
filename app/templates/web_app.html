@@ -108,6 +108,7 @@
                       window.removeEventListener('deviceorientation', compassListener, false);
                       compassOn = false;
                       $("#heading_compass").attr('class', "btn btn-default")
+                      $("#heading").attr("placeholder", "0-360");
                     } else {
                       $("#heading").attr("placeholder", "Loading...");
                       window.addEventListener('deviceorientation', compassListener, false);
