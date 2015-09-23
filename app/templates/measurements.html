@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<ul>
+{% for measurement in measurements %}
+    <li>[{{measurement.timestamp}}]
+        <a href="/?search={{measurement.search_id}}">search</a>
+        <b>lon:</b> {{measurement.longitude}},
+        <b>lat:</b> {{measurement.latitude}},
+        <b>heading:</b> {{measurement.heading}}
+        <b>strength:</b> {{measurement.strength}}
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

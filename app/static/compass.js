@@ -35,15 +35,3 @@ function compassHeading(alpha, beta, gamma) {
   return compassHeading;
 
 }
-
-window.addEventListener('deviceorientation', function(evt) {
-
-  var heading = null;
-
-  if(evt.absolute === true && evt.alpha !== null) {
-    heading = compassHeading(evt.alpha, evt.beta, evt.gamma);
-  }
-
-  // Do something with 'heading'...
-
-}, false);

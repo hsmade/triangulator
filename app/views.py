@@ -257,3 +257,12 @@ def user_delete(id):
         db.session.delete(user)
         db.session.commit()
         return redirect(url_for('user_list'))
+
+
+@app.route('/user/<id>/measurements')
+def user_measurements(id):
+    user = models.User.query.get(id)
+    if not (user == current_user or current_user.call == 'admin'):
+        return 'Not allowed', 404
+    measurements = [row for row in models.Measurement.query.all() if row.user_id == user.id]
+    return render_template('measurements.html', measurements=measurements, user=current_user)
