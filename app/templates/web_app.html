@@ -79,6 +79,7 @@
                       console.log(position);
                       if (position.coords.heading) {
                         $("#heading").val(position.coords.heading);
+                        $("#heading").attr("placeholder","0-360");
                       } else {
                         $("#heading").attr('placeholder', 'GPS heading not available');
                         $("#heading_gps").attr('class', "btn btn-default")
@@ -137,6 +138,8 @@
                       // console.log(position);
                       $("#longitude").val(position.coords.longitude);
                       $("#latitude").val(position.coords.latitude);
+                    $("#longitude").attr("placeholder","Longitude");
+                    $("#latitude").attr("placeholder","Latitude");
                       $("#location_gps").attr('class', "btn btn-default")
                     }
                     return true;
