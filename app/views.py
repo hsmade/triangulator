@@ -21,6 +21,8 @@ register_parser = reqparse.RequestParser()
 register_parser.add_argument('call')
 register_parser.add_argument('password')
 register_parser.add_argument('email')
+register_parser.add_argument('longitude')
+register_parser.add_argument('latitude')
 
 
 def requires_admin(f):
@@ -50,7 +52,8 @@ class User(Resource):
         args = register_parser.parse_args()
         password = md5()
         password.update(args.password)
-        new_user = models.User(call=args.call, email=args.email, password_hash=password.hexdigest())
+        new_user = models.User(call=args.call, email=args.email, password_hash=password.hexdigest(),
+                               longitude=args.longitude, latitude=args.latitude)
         try:
             db.session.add(new_user)
             db.session.commit()
