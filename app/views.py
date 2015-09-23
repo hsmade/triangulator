@@ -263,6 +263,17 @@ def user_delete(id):
 def user_measurements(id):
     user = models.User.query.get(id)
     if not (user == current_user or current_user.call == 'admin'):
-        return 'Not allowed', 404
+        return 'Not allowed', 500
     measurements = [row for row in models.Measurement.query.all() if row.user_id == user.id]
     return render_template('measurements.html', measurements=measurements, user=current_user)
+
+
+@app.route('/measurement/<id>/delete')
+def measurement_delete(id):
+    measurement = models.Measurement.query.get(id)
+    user = models.User.query.get(measurement.user_id)
+    if not (current_user == user or current_user.call == 'admin'):
+        return 'Not allowed', 500
+    db.session.delete(measurement)
+    db.session.commit()
+    return redirect('/user/{user}/measurements'.format(user=user.id))

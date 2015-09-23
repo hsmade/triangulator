@@ -8,7 +8,11 @@
         <b>lat:</b> {{measurement.latitude}},
         <b>heading:</b> {{measurement.heading}}
         <b>strength:</b> {{measurement.strength}}
+        <a href="/measurement/{{measurement.id}}/delete">remove</a>
     </li>
 {% endfor %}
+{% if not measurements %}
+    <li>None</li>
+{% endif %}
 </ul>
 {% endblock %}
