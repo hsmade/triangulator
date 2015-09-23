@@ -32,6 +32,6 @@ function compassHeading(alpha, beta, gamma) {
   compassHeading *= 180 / Math.PI;
 
   console.log('Compass: ' + compassHeading);
-  return compassHeading;
+  return Math.round(compassHeading);
 
 }

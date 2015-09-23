@@ -70,6 +70,7 @@
               <div class="btn-group" role="group" aria-label="Heading">
                 <script language="JavaScript">
                   function headingGPS() {
+                    $("#heading_gps").attr('class', "btn btn-primary")
                     $("#heading").attr("placeholder","Loading...");
                     if (navigator.geolocation) {
                       navigator.geolocation.getCurrentPosition(showHeading);
@@ -80,6 +81,8 @@
                         $("#heading").val(position.coords.heading);
                       } else {
                         $("#heading").attr('placeholder', 'GPS heading not available');
+                        $("#heading_gps").attr('class', "btn btn-default")
+
                       }
                     }
                     return true;
@@ -95,6 +98,7 @@
                       $("#heading").val(heading);
                     } else {
                       $("#heading").attr('placeholder', 'Compass not available');
+                      headingCompass()
                     }
                   }
 
@@ -102,10 +106,12 @@
                     if (compassOn) {
                       window.removeEventListener('deviceorientation', compassListener, false);
                       compassOn = false;
+                      $("#heading_compass").attr('class', "btn btn-default")
                     } else {
                       $("#heading").attr("placeholder", "Loading...");
                       window.addEventListener('deviceorientation', compassListener, false);
                       compassOn = true;
+                      $("#heading_compass").attr('class', "btn btn-primary")
                     }
                   }
                 </script>
@@ -121,6 +127,7 @@
               <div class="btn-group" role="group" aria-label="Location">
                 <script language="JavaScript">
                   function locationGPS() {
+                    $("#location_gps").attr('class', "btn btn-primary")
                     $("#longitude").attr("placeholder","Loading...");
                     $("#latitude").attr("placeholder","Loading...");
                     if (navigator.geolocation) {
@@ -130,6 +137,7 @@
                       // console.log(position);
                       $("#longitude").val(position.coords.longitude);
                       $("#latitude").val(position.coords.latitude);
+                      $("#location_gps").attr('class', "btn btn-default")
                     }
                     return true;
                   }
