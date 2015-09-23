@@ -230,7 +230,7 @@ def user_enable(id):
     if not user:
         return 'User not found', 404
     else:
-        user.enabled = True
+        user.enabled = 1
         db.session.commit()
         return redirect(url_for('user_list'))
 
@@ -242,7 +242,7 @@ def user_disable(id):
     if not user:
         return 'User not found', 404
     else:
-        user.enabled = False
+        user.enabled = 0
         db.session.commit()
         return redirect(url_for('user_list'))
 
