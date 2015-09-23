@@ -66,24 +66,80 @@
           <form role="form" action="/searches/{{search['id']}}" method="post">
             <div class="modal-body">
               <label for="heading">Heading:</label>
+              <div class="btn-group" role="group" aria-label="Heading">
+                <script language="JavaScript">
+                  function headingGPS() {
+                    $("#heading").attr("placeholder","Loading...");
+                    if (navigator.geolocation) {
+                      navigator.geolocation.getCurrentPosition(showHeading);
+                    };
+                    function showHeading(position) {
+                      console.log(position);
+                      if (position.coords.heading) {
+                        $("#heading").val(position.coords.heading);
+                      } else {
+                        $("#heading").attr('placeholder', 'GPS heading not available');
+                      }
+                    }
+                    return true;
+                  }
+                  compassOn = false;
+
+                  function compassListener(event) {
+                    console.log('listener called:');
+                    console.log(event);
+                    var heading = null;
+                    if(event.absolute === true && event.alpha !== null) {
+                      heading = compassHeading(event.alpha, event.beta, event.gamma);
+                      $("#heading").val(heading);
+                    } else {
+                      $("#heading").attr('placeholder', 'Compass not available');
+                    }
+                  }
+
+                  function headingCompass() {
+                    if (compassOn) {
+                      window.removeEventListener('deviceorientation', compassListener, false);
+                      compassOn = false;
+                    } else {
+                      $("#heading").attr("placeholder", "Loading...");
+                      window.addEventListener('deviceorientation', compassListener, false);
+                      compassOn = true;
+                    }
+                  }
+                </script>
+
+                <button type="button" id="heading_gps" class="btn btn-default" onclick="headingGPS()">GPS</button>
+                <button type="button" id="heading_compass" class="btn btn-default" onclick="headingCompass()">Compass</button>
+              </div>
               <input name="heading" type="text" class="form-control" id="heading" placeholder="0-360" required>
-              <label for="strength">Strength:</label>
+              <label for="strength">Signal strength:</label>
               <input name="strength" type="text" class="form-control" id="strength" placeholder="1-9" required>
-              <label for="longitude">Longitude:</label>
-              <input name="longitude" type="text" class="form-control" id="longitude" required>
-              <label for="latitude">Latitude:</label>
-              <input name="latitude" type="text" class="form-control" id="latitude" required>
+              <hr />
+              <label>Location:</label>
+              <div class="btn-group" role="group" aria-label="Location">
+                <script language="JavaScript">
+                  function locationGPS() {
+                    $("#longitude").attr("placeholder","Loading...");
+                    $("#latitude").attr("placeholder","Loading...");
+                    if (navigator.geolocation) {
+                      navigator.geolocation.getCurrentPosition(showPosition);
+                    };
+                    function showPosition(position) {
+                      // console.log(position);
+                      $("#longitude").val(position.coords.longitude);
+                      $("#latitude").val(position.coords.latitude);
+                    }
+                    return true;
+                  }
+                </script>
+                <button type="button" id="location_gps" class="btn btn-default" onclick="locationGPS()">GPS</button>
+              </div><br />
+              <!--<label for="longitude">Longitude:</label>-->
+              <input name="longitude" type="text" class="form-control" id="longitude" placeholder="Longitude" required>
+              <!--<label for="latitude">Latitude:</label>-->
+              <input name="latitude" type="text" class="form-control" id="latitude" placeholder="Latitude" required>
               <input type="hidden" name="search" value="{{search['id']}}">
-              <script language="JavaScript">
-                if (navigator.geolocation) {
-                  navigator.geolocation.getCurrentPosition(showPosition);
-                };
-                function showPosition(position) {
-                  console.log(position);
-                  $("#longitude").val(position.coords.longitude);
-                  $("#latitude").val(position.coords.latitude);
-                }
-              </script>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
