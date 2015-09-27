@@ -1,18 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
-<ul>
+    <table>
+        <tr>
+            <th>Time</th>
+            <th>Search</th>
+            <th>Longitude</th>
+            <th>Latitude</th>
+            <th>Heading</th>
+            <th>Strength</th>
+            <th>Actions</th>
+        </tr>
 {% for measurement in measurements %}
-    <li>[{{measurement.timestamp}}]
-        <a href="/?search={{measurement.search_id}}">search</a>
-        <b>lon:</b> {{measurement.longitude}},
-        <b>lat:</b> {{measurement.latitude}},
-        <b>heading:</b> {{measurement.heading}}
-        <b>strength:</b> {{measurement.strength}}
-        <a href="/measurement/{{measurement.id}}/delete">remove</a>
-    </li>
+        <tr>
+            <td>{{measurement['timestamp'].split('.')[0]}}</td>
+        {% if measurement['search_id'] > 0: %}
+            <td><a href="/?search={{measurement['search_id']}}">{{measurement['search_id']}}</a></td>
+        {% else %}
+            <td>&nbsp;</td>
+        {% endif %}
+            <td>{{measurement['longitude']}}</td>
+            <td>{{measurement['longitude']}}</td>
+            <td>{{measurement['heading']}}</td>
+            <td>{{measurement['strength']}}</td>
+            <td><a href="/measurement/{{measurement.id}}/delete">remove</a></td>
+        </tr>
 {% endfor %}
+
 {% if not measurements %}
-    <li>None</li>
+        <tr><td colspan="7">None</td></tr>
 {% endif %}
-</ul>
+    </table>
 {% endblock %}

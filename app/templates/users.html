@@ -1,18 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
-<ul>
+    <table>
+        <tr>
+            <th>Call</th>
+            <th>e-Mail</th>
+            <th>Measurements</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
 {% for user in users: %}
+        <tr>
   {% if user.call != 'admin': %}
-      <li>{{user.call}} ({{user.email}})
-      <a href="/user/{{user.id}}/measurements">measurements</a>
-      {% if user.is_active() %}
-          <a href="{{url_for('user_disable', id=user.id)}}">disable</a>
-      {% else: %}
-          <a href="{{url_for('user_enable', id=user.id)}}">enable</a>
-      {% endif %}
-      <a href="{{url_for('user_delete', id=user.id)}}">remove</a>
-      </li>
+            <td>{{user.call}}</td>
+            <td>{{user.email}}</td>
+            <td><a href="/user/{{user.id}}/measurements">measurements</a></td>
+          {% if user.is_active() %}
+            <td><a href="{{url_for('user_disable', id=user.id)}}">disable</a></td>
+          {% else: %}
+            <td><a href="{{url_for('user_enable', id=user.id)}}">enable</a></td>
+          {% endif %}
+            <td><a href="{{url_for('user_delete', id=user.id)}}">remove</a></td>
   {% endif %}
+        </tr>
 {% endfor %}
-</ul>
+    </table>
 {% endblock %}

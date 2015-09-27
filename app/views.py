@@ -52,11 +52,16 @@ class User(Resource):
         args = register_parser.parse_args()
         password = md5()
         password.update(args.password)
+        print args.longitude, args.latitude
         new_user = models.User(call=args.call, email=args.email, password_hash=password.hexdigest(),
                                longitude=args.longitude, latitude=args.latitude)
         try:
             db.session.add(new_user)
             db.session.commit()
+            # new_measurement = models.Measurement(search_id=0, user_id=new_user.id, latitude=args.latitude,
+                                                 # longitude=args.longitude, strength=0, heading=0)
+            # db.session.add(new_measurement)
+            # db.session.commit()
         except Exception as e:
             return str(e), 500
 
@@ -264,7 +269,16 @@ def user_measurements(id):
     user = models.User.query.get(id)
     if not (user == current_user or current_user.call == 'admin'):
         return 'Not allowed', 500
-    measurements = [row for row in models.Measurement.query.all() if row.user_id == user.id]
+    measurements = [row.to_dict() for row in models.Measurement.query.all() if row.user_id == user.id]
+    if user.call == 'admin':
+        measurements.insert(0, {
+            'timestamp': 'Registration',
+            'search_id':    0,
+            'longitude': user.longitude,
+            'latitude': user.latitude,
+            'heading': 0,
+            'strength': 0,
+        })
     return render_template('measurements.html', measurements=measurements, user=current_user)
 
 

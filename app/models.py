@@ -85,6 +85,7 @@ class Measurement(db.Model):
         return {
             'id': self.id,
             'user': User.query.get(self.user_id).to_dict(),
+            'search_id': self.search_id,
             'latitude': self.latitude,
             'longitude': self.longitude,
             'strength': self.strength,
