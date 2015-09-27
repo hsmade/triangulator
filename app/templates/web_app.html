@@ -199,7 +199,7 @@
         lineCoordinates.push(new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}));
         lineCoordinates.push(new google.maps.LatLng({{measurement['endpoint_latitude']}}, {{measurement['endpoint_longitude']}}));
 
-        var infowindow_{{measurement['user']['id']}} = new google.maps.InfoWindow({
+        var infowindow_{{measurement['id']}} = new google.maps.InfoWindow({
             content: '{{measurement['user']['call']}}'
         });
 
@@ -211,7 +211,7 @@
             // icon: pinImage,
         });
         marker.addListener('click', function() {
-            infowindow_{{measurement['user']['id']}}.open(map, marker);
+            infowindow_{{measurement['id']}}.open(map, marker);
         });
 
         var tripPath = new google.maps.Polyline({
