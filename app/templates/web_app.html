@@ -188,9 +188,9 @@
 
     {% for measurement in search['measurements']: %}
 
-        var lineCoordinates = [];
-        lineCoordinates.push(new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}));
-        lineCoordinates.push(new google.maps.LatLng({{measurement['endpoint_latitude']}}, {{measurement['endpoint_longitude']}}));
+        var lineCoordinates_{{measurement['id']}} = [];
+        lineCoordinates_{{measurement['id']}}.push(new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}));
+        lineCoordinates_{{measurement['id']}}.push(new google.maps.LatLng({{measurement['endpoint_latitude']}}, {{measurement['endpoint_longitude']}}));
 
         var infowindow_{{measurement['id']}} = new google.maps.InfoWindow({
             content: '{{measurement['user']['call']}}'
@@ -201,12 +201,12 @@
             title: '{{measurement['user']['call']}}',
             map: map,
         });
-        marker.addListener('click', function() {
+        marker_{{measurement['id']}}.addListener('click', function() {
             infowindow_{{measurement['id']}}.open(map, marker_{{measurement['id']}});
         });
 
         var tripPath = new google.maps.Polyline({
-            path: lineCoordinates,
+            path: lineCoordinates_{{measurement['id']}},
             geodesic: true,
             strokeColor: '#000',
             strokeOpacity: 1.0,
