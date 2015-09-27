@@ -41,6 +41,7 @@ class User(db.Model):
 
 class Search(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     frequency = db.Column(db.String(32))
     description = db.Column(db.String(255))
     start_time = db.Column(db.DateTime)
@@ -52,6 +53,7 @@ class Search(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'user_id': self.user_id,
             'frequency': self.frequency,
             'description': self.description,
             'start_time': str(self.start_time),

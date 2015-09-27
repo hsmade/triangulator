@@ -94,7 +94,8 @@ class SearchList(Resource):
         args = search_parser.parse_args()
         new_search = models.Search(frequency=args.frequency,
                                    description=args.description,
-                                   start_time=datetime.now())
+                                   start_time=datetime.now(),
+                                   user_id=current_user.id)
         db.session.add(new_search)
         db.session.commit()
         return redirect(url_for('web_app', search=new_search.id))
@@ -291,3 +292,23 @@ def measurement_delete(id):
     db.session.delete(measurement)
     db.session.commit()
     return redirect('/user/{user}/measurements'.format(user=user.id))
+
+
+@app.route('/user/<id>/searches')
+def user_searches(id):
+    user = models.User.query.get(id)
+    if not (user == current_user or current_user.call == 'admin'):
+        return 'Not allowed', 500
+    searches = [row.to_dict() for row in models.Search.query.all() if row.user_id == user.id]
+    return render_template('searches.html', searches=searches, user=current_user)
+
+
+@app.route('/search/<id>/delete')
+def search_delete(id):
+    search = models.Search.query.get(id)
+    user = models.User.query.get(search.user_id)
+    if not (current_user == user or current_user.call == 'admin'):
+        return 'Not allowed', 500
+    db.session.delete(search)
+    db.session.commit()
+    return redirect('/user/{user}/searches'.format(user=user.id))

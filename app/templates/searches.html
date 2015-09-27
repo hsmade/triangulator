@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <table>
+        <tr>
+            <th>Start</th>
+            <th>Frequency</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+{% for search in searches %}
+        <tr>
+            <td>{{search['start_time']}}</td>
+            <td><a href="/?search={{search['id']}}">{{search['frequency']}}</a></td>
+            <td>{{search['description']}}</td>
+            <td><a href="/search/{{search.id}}/delete">remove</a></td>
+        </tr>
+{% endfor %}
+
+{% if not searches %}
+        <tr><td colspan="7">None</td></tr>
+{% endif %}
+    </table>
+{% endblock %}
