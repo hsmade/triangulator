@@ -15,6 +15,17 @@ class User(db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.call)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'call': self.call,
+            'email': self.email,
+            'enabled': self.enabled,
+            'longitude': self.longitude,
+            'latitude': self.latitude,
+            # 'measurements': self.measurements.to_dict()
+        }
+
     def is_active(self):
         return self.enabled
 
@@ -73,7 +84,7 @@ class Measurement(db.Model):
             math.cos(d/R)-math.sin(lat_start)*math.sin(lat_end))
         return {
             'id': self.id,
-            'user_id': self.user_id,
+            'user': User.query.get(self.user_id).to_dict(),
             'latitude': self.latitude,
             'longitude': self.longitude,
             'strength': self.strength,
