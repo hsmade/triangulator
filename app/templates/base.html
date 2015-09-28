@@ -39,8 +39,10 @@
                  {% if user.call == 'admin': %}
                  <li><a href="/admin/users">Users</a></li>
                  {% endif %}
+                  {% if user.call %}
                  <li><a href="/user/{{user.id}}/measurements">My measurements</a></li>
                  <li><a href="/user/{{user.id}}/searches">My searches</a></li>
+                  {% endif %}
               </ul>
               <div class="dropdown navbar-right">
                  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
