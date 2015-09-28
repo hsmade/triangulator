@@ -16,6 +16,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - {} - %(m
 file_handler.setFormatter(formatter)
 logger = logging.getLogger('app.view')
 logger.addHandler(file_handler)
+logger.setLevel(logging.DEBUG)
 
 search_parser = reqparse.RequestParser()
 search_parser.add_argument('frequency')
