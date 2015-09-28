@@ -5,6 +5,17 @@ from flask import Flask, render_template, url_for, request, redirect
 from hashlib import md5
 from flask.ext.login import login_user, login_required, current_user, logout_user
 from functools import wraps
+import logging
+from logging import handlers
+
+file_handler = handlers.RotatingFileHandler('/var/web/ph7wim.com/logs/triangulator.log',
+                                            maxBytes=10024000)
+file_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - {} - %(message)s'.format(
+    getattr(current_user, 'call', 'Not authenticated')))
+file_handler.setFormatter(formatter)
+logger = logging.getLogger('app.view')
+logger.addHandler(file_handler)
 
 search_parser = reqparse.RequestParser()
 search_parser.add_argument('frequency')
@@ -50,6 +61,7 @@ class User(Resource):
         :return: redirect to /
         """
         args = register_parser.parse_args()
+        logger.debug('User:post() with args: {}'.format(args))
         password = md5()
         password.update(args.password)
         print args.longitude, args.latitude
@@ -71,6 +83,7 @@ class User(Resource):
     @requires_admin
     @login_required
     def get(self):
+        logger.debug('User:get()')
         users = models.User.query.all()
         return [(user.call, user.email) for user in users]
 
@@ -82,6 +95,7 @@ class SearchList(Resource):
         Retrieve list of searches
         :return: list of search IDs with frequency and description
         """
+        logger.debug('SearchList:get()')
         searches = [search.to_dict() for search in models.Search.query.all()]
         return searches
 
@@ -92,6 +106,7 @@ class SearchList(Resource):
         :return:
         """
         args = search_parser.parse_args()
+        logger.debug('SearchList.post() with args: {}'.format(args))
         new_search = models.Search(frequency=args.frequency,
                                    description=args.description,
                                    start_time=datetime.now(),
@@ -109,6 +124,7 @@ class Search(Resource):
         :param id: search ID
         :return: data for the current search
         """
+        logger.debug('Search:get(id={})'.format(id))
         search = models.Search.query.get(id) or None
         if not search:
             return [], 404
@@ -123,6 +139,7 @@ class Search(Resource):
         :return: result of insert into DB
         """
         args = measurement_parser.parse_args()
+        logger.debug('Search.post(id={}) with args: {}'.format(id, args))
         new_measurement = models.Measurement(search_id=id,
                                              heading=float(args.heading),
                                              strength=int(args.strength),
@@ -144,6 +161,7 @@ def login():
     """
     Login page
     """
+    logger.debug('login()')
     return render_template('login.html', user=None)
 
 
@@ -154,6 +172,7 @@ def web_app():
     Main app page
     """
     search_id = request.args.get('search')
+    logger.debug('web_app() with search_id: {}'.format(search_id))
     search_dict = False
     average_longitude = 0
     average_latitude = 0
@@ -181,6 +200,7 @@ def login_check():
     """
     For flask-login, verifies login
     """
+    logger.debug('login_check() with form: {}'.format(request.form))
     user = get_user_by_name(request.form['call'])
     if user:
         print 'found user: {}'.format(user)
@@ -203,6 +223,7 @@ def login_or_register():
     """
     base page, not authenticated
     """
+    logger.debug('login_or_register()')
     return render_template('login_or_register.html', user=None)
 
 
@@ -211,6 +232,7 @@ def register():
     """
     Register a new user
     """
+    logger.debug('register()')
     return render_template('register.html', user=None)
 
 
@@ -219,6 +241,7 @@ def logout():
     """
     Logout
     """
+    logger.debug('logout()')
     logout_user()
     return redirect(url_for('web_app'))
 
@@ -226,12 +249,14 @@ def logout():
 @app.route('/admin/users')
 @requires_admin
 def user_list():
+    logger.debug('user_list()')
     return render_template('users.html', users=models.User.query.all(), user=current_user)
 
 
 @app.route('/admin/users/<id>/enable')
 @requires_admin
 def user_enable(id):
+    logger.debug('user_enable(id={})'.format(id))
     user = models.User.query.get(id)
     if not user:
         return 'User not found', 404
@@ -244,6 +269,7 @@ def user_enable(id):
 @app.route('/admin/users/<id>/disable')
 @requires_admin
 def user_disable(id):
+    logger.debug('user_disable(id={})'.format(id))
     user = models.User.query.get(id)
     if not user:
         return 'User not found', 404
@@ -256,6 +282,7 @@ def user_disable(id):
 @requires_admin
 @app.route('/admin/users/<id>/delete')
 def user_delete(id):
+    logger.debug('user_delete(id={})'.format(id))
     user = models.User.query.get(id)
     if not user:
         return 'User not found', 404
@@ -267,6 +294,7 @@ def user_delete(id):
 
 @app.route('/user/<id>/measurements')
 def user_measurements(id):
+    logger.debug('user_measurements(id={})'.format(id))
     user = models.User.query.get(id)
     if not (user == current_user or current_user.call == 'admin'):
         return 'Not allowed', 500
@@ -285,6 +313,7 @@ def user_measurements(id):
 
 @app.route('/measurement/<id>/delete')
 def measurement_delete(id):
+    logger.debug('measurement_delete(id={})'.format(id))
     measurement = models.Measurement.query.get(id)
     user = models.User.query.get(measurement.user_id)
     if not (current_user == user or current_user.call == 'admin'):
@@ -294,9 +323,10 @@ def measurement_delete(id):
     return redirect('/user/{user}/measurements'.format(user=user.id))
 
 
-@app.route('/user/<id>/searches')
-def user_searches(id):
-    user = models.User.query.get(id)
+@app.route('/user/<user_id>/searches')
+def user_searches(user_id):
+    logger.debug('user_searches(user_id={})'.format(user_id))
+    user = models.User.query.get(user_id)
     if not (user == current_user or current_user.call == 'admin'):
         return 'Not allowed', 500
     searches = [row.to_dict() for row in models.Search.query.all() if row.user_id == user.id]
@@ -305,6 +335,7 @@ def user_searches(id):
 
 @app.route('/search/<id>/delete')
 def search_delete(id):
+    logger.debug('search_delete(id={})'.format(id))
     search = models.Search.query.get(id)
     user = models.User.query.get(search.user_id)
     if not (current_user == user or current_user.call == 'admin'):
