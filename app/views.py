@@ -66,6 +66,10 @@ class User(Resource):
         password = md5()
         password.update(args.password)
         print args.longitude, args.latitude
+        if not args.longitude: 
+            args.longitude=0
+        if not args.latitude: 
+            args.longitude=0
         new_user = models.User(call=args.call, email=args.email, password_hash=password.hexdigest(),
                                longitude=args.longitude, latitude=args.latitude)
         try:
