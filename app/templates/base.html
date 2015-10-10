@@ -39,7 +39,7 @@
                  {% if user.call == 'admin': %}
                  <li><a href="/admin/users">Users</a></li>
                  {% endif %}
-                 {% if user.call %}
+                 {% if user.call: %}
                  <li><a href="/user/{{user.id}}/measurements">My measurements</a></li>
                  <li><a href="/user/{{user.id}}/searches">My searches</a></li>
                  {% endif %}
