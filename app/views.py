@@ -8,7 +8,7 @@ from functools import wraps
 import logging
 from logging import handlers
 
-file_handler = handlers.RotatingFileHandler('/var/web/ph7wim.com/logs/triangulator.log',
+file_handler = handlers.RotatingFileHandler('/tmp/triangulator.log',
                                             maxBytes=10024000)
 file_handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - {} - %(message)s'.format(
@@ -28,6 +28,7 @@ measurement_parser.add_argument('latitude')
 measurement_parser.add_argument('heading')
 measurement_parser.add_argument('strength')
 measurement_parser.add_argument('search')
+measurement_parser.add_argument('timestamp')
 
 register_parser = reqparse.RequestParser()
 register_parser.add_argument('call')
@@ -144,7 +145,7 @@ class Search(Resource):
         new_measurement = models.Measurement(search_id=id,
                                              heading=float(args.heading),
                                              strength=int(args.strength),
-                                             timestamp=datetime.now(),
+                                             timestamp=datetime.strptime(args.timestamp, '%Y-%m-%d %H:%M'),
                                              latitude=float(args.latitude),
                                              longitude=float(args.longitude),
                                              user_id=current_user.get_id())
@@ -173,6 +174,12 @@ def web_app():
     Main app page
     """
     search_id = request.args.get('search')
+    start = request.args.get('start', False)
+    end = request.args.get('end', False)
+    if start:
+        start = datetime.strptime(start, '%Y-%m-%d %H:%M')
+    if end:
+        end = datetime.strptime(end, '%Y-%m-%d %H:%M')
     logger.debug('web_app() with search_id: {}'.format(search_id))
     search_dict = False
     average_longitude = 0
@@ -180,7 +187,7 @@ def web_app():
     if search_id:
         search = models.Search.query.get(search_id)
         if search:
-            search_dict = search.to_dict()
+            search_dict = search.filter(start, end)
             if search_dict['measurements']:
                 average_longitude = \
                     sum([measurement['longitude'] for measurement in search_dict['measurements']]) / len(search_dict['measurements'])
@@ -190,10 +197,12 @@ def web_app():
                                average_longitude=average_longitude,
                                average_latitude=average_latitude,
                                searches=models.Search.query.all(),
-                               user=current_user)
+                               user=current_user,
+                               datetime=datetime.now().strftime('%Y-%m-%d %H:%M')
+                               )
     else:
         return render_template('web_app.html', searches=models.Search.query.all(),
-                               user=current_user)
+                               user=current_user, datetime=datetime.now().strftime('%Y-%m-%d %H:%M'))
 
 
 @app.route('/users/login', methods=['post'])
@@ -298,7 +307,7 @@ def user_measurements(id):
     logger.debug('user_measurements(id={})'.format(id))
     user = models.User.query.get(id)
     if not (user == current_user or current_user.call == 'admin'):
-        return 'Not allowed', 500
+        return 'Not allowed', 403
     measurements = [row.to_dict() for row in models.Measurement.query.all() if row.user_id == user.id]
     if user.call == 'admin':
         measurements.insert(0, {
@@ -318,7 +327,7 @@ def measurement_delete(id):
     measurement = models.Measurement.query.get(id)
     user = models.User.query.get(measurement.user_id)
     if not (current_user == user or current_user.call == 'admin'):
-        return 'Not allowed', 500
+        return 'Not allowed', 403
     db.session.delete(measurement)
     db.session.commit()
     return redirect('/user/{user}/measurements'.format(user=user.id))
@@ -329,7 +338,7 @@ def user_searches(user_id):
     logger.debug('user_searches(user_id={})'.format(user_id))
     user = models.User.query.get(user_id)
     if not (user == current_user or current_user.call == 'admin'):
-        return 'Not allowed', 500
+        return 'Not allowed', 403
     searches = [row.to_dict() for row in models.Search.query.all() if row.user_id == user.id]
     return render_template('searches.html', searches=searches, user=current_user)
 
@@ -340,7 +349,7 @@ def search_delete(id):
     search = models.Search.query.get(id)
     user = models.User.query.get(search.user_id)
     if not (current_user == user or current_user.call == 'admin'):
-        return 'Not allowed', 500
+        return 'Not allowed', 403
     db.session.delete(search)
     db.session.commit()
     return redirect('/user/{user}/searches'.format(user=user.id))

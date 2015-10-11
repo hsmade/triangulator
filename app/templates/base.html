@@ -9,7 +9,10 @@
 
   <link rel="stylesheet" href="{{url_for('static', filename='bootstrap.min.cs')}}s">
   <link rel="stylesheet" href="{{url_for('static', filename='bootstrap-theme.min.css')}}">
+  <link rel="stylesheet" href="{{url_for('static', filename='bootstrap-datetimepicker.min.css')}}">
   <script src="{{url_for('static', filename='bootstrap.min.js')}}"></script>
+  <script src="{{url_for('static', filename='moment-with-locales.min.js')}}"></script>
+  <script src="{{url_for('static', filename='bootstrap-datetimepicker.min.js')}}"></script>
   <script>
     $(document).ready(function(){
       $('[data-toggle="popover"]').popover();
@@ -33,16 +36,16 @@
            </div>
            <div id="navbar" class="collapse navbar-collapse">
               <ul class="nav navbar-nav">
-                 <li class="active"><a href="/">Home</a></li>
-                 <li><a href="#" title="About" data-toggle="popover" data-placement="bottom" data-content="Triangulator, by PH7Wim">About</a></li>
-                 <li><a href="#" title="Contact" data-toggle="popover" data-placement="bottom" data-content="ph7wim@ph7wim.com">Contact</a></li>
+                 <!--<li class="active"><a href="/">Home</a></li>-->
+                 {% if user.call: %}
+                 <li><a href="/user/{{user.id}}/searches">My searches</a></li>
+                 <li><a href="/user/{{user.id}}/measurements">My measurements</a></li>
+                 {% endif %}
                  {% if user.call == 'admin': %}
                  <li><a href="/admin/users">Users</a></li>
                  {% endif %}
-                 {% if user.call: %}
-                 <li><a href="/user/{{user.id}}/measurements">My measurements</a></li>
-                 <li><a href="/user/{{user.id}}/searches">My searches</a></li>
-                 {% endif %}
+                 <li><a href="#" title="About" data-toggle="popover" data-placement="bottom" data-content="Create a search per station that you are looking for, then let people submit measurements for this search. By looking that the map, you should be able to have a global idea of where the station is located.">About</a></li>
+                 <li><a href="#" title="Contact" data-toggle="popover" data-placement="bottom" data-content="ph7wim@ph7wim.com">Contact</a></li>
               </ul>
               <div class="dropdown navbar-right">
                  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
