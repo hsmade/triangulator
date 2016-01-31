@@ -198,6 +198,9 @@
 </div>
 
 {% if search %}
+  {%  if user.call == 'admin' or user.id == search.user_id %}
+      <a href="/search/{{search.id}}/delete" class="btn btn-primary btn-lg" role="button">Remove search</a>
+  {% endif %}
   {% if search['measurements'] %}
     <div id="map-canvas" style="width: 100%; height: 400px; margin: 0px; padding: 0px;"></div>
     <script language="JavaScript" src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
