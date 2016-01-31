@@ -104,6 +104,9 @@
                     }
                   }
 
+                  function headingNone() {
+                      $("#heading").val(-1);
+                  }
                   function headingCompass() {
                     if (compassOn) {
                       window.removeEventListener('deviceorientation', compassListener, false);
@@ -121,6 +124,7 @@
 
                 <button type="button" id="heading_gps" class="btn btn-default" onclick="headingGPS()">GPS</button>
                 <button type="button" id="heading_compass" class="btn btn-default" onclick="headingCompass()">Compass</button>
+                <button type="button" id="heading_none" class="btn btn-default" onclick="headingNone()">No heading</button>
               </div>
               <input name="heading" type="text" class="form-control" id="heading" placeholder="0-360" required>
               <label for="strength">Signal strength:</label>
@@ -210,30 +214,37 @@
 
     {% for measurement in search['measurements']: %}
 
-        var lineCoordinates_{{measurement['id']}} = [];
-        lineCoordinates_{{measurement['id']}}.push(new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}));
-        lineCoordinates_{{measurement['id']}}.push(new google.maps.LatLng({{measurement['endpoint_latitude']}}, {{measurement['endpoint_longitude']}}));
-
-        var infowindow_{{measurement['id']}} = new google.maps.InfoWindow({
-            content: '{{measurement['user']['call']}}'
-        });
-
-        marker_{{measurement['id']}} = new google.maps.Marker({
-            position: new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}),
-            title: '{{measurement['user']['call']}}',
-            map: map,
-        });
-        marker_{{measurement['id']}}.addListener('click', function() {
-            infowindow_{{measurement['id']}}.open(map, marker_{{measurement['id']}});
-        });
-
-        var tripPath = new google.maps.Polyline({
-            path: lineCoordinates_{{measurement['id']}},
-            geodesic: true,
-            strokeColor: '#000',
-            strokeOpacity: 1.0,
-            strokeWeight: 2
-        });
+        if ({{measurement['heading']}} >= 0) {
+            var lineCoordinates_{{measurement['id']}} = [];
+            lineCoordinates_{{measurement['id']}}.push(new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}));
+            lineCoordinates_{{measurement['id']}}.push(new google.maps.LatLng({{measurement['endpoint_latitude']}}, {{measurement['endpoint_longitude']}}));
+    
+            var infowindow_{{measurement['id']}} = new google.maps.InfoWindow({
+                content: '{{measurement['user']['call']}}'
+            });
+    
+            marker_{{measurement['id']}} = new google.maps.Marker({
+                position: new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}),
+                title: '{{measurement['user']['call']}}',
+                map: map,
+            });
+            marker_{{measurement['id']}}.addListener('click', function() {
+                infowindow_{{measurement['id']}}.open(map, marker_{{measurement['id']}});
+            });
+    
+            var tripPath = new google.maps.Polyline({
+                path: lineCoordinates_{{measurement['id']}},
+                geodesic: true,
+                strokeColor: '#000',
+                strokeOpacity: 1.0,
+                strokeWeight: 2
+            });
+        } else {
+            var tripPath = new google.maps.Marker({
+                position: {lat: {{measurement['latitude']}}, lng: {{measurement['longitude']}}},
+                title: '{{measurement['user']['call']}}'
+            });
+        }
 
         tripPath.setMap(map);
     {% endfor %}
