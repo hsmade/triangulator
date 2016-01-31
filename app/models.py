@@ -1,5 +1,6 @@
 from app import db
 import math
+from datetime import datetime
 
 
 class User(db.Model):
@@ -60,6 +61,25 @@ class Search(db.Model):
             'measurements': [measurement.to_dict() for measurement in self.measurements]
                 }
 
+    def filter(self, start, end):
+        result = {
+            'id': self.id,
+            'user_id': self.user_id,
+            'frequency': self.frequency,
+            'description': self.description,
+            'start_time': str(self.start_time),
+                }
+        if start and not end:
+            end = datetime.now()
+        elif end and not start:
+            start = datetime.fromtimestamp(0)
+        if start and end:
+            print start, end
+            result['measurements'] = [measurement.to_dict() for measurement in self.measurements if start <= measurement.timestamp <= end]
+        else:
+            result['measurements'] = [measurement.to_dict() for measurement in self.measurements]
+        print result
+        return result
 
 class Measurement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
