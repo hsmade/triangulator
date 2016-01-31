@@ -81,6 +81,7 @@ class Search(db.Model):
         print result
         return result
 
+
 class Measurement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     search_id = db.Column(db.Integer, db.ForeignKey('search.id'))
