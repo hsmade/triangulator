@@ -11,7 +11,7 @@
   </button>
   <ul class="dropdown-menu" aria-labelledby="dropdownSearches">
     {% for search in searches: %}
-      <li><a href="/?search={{search['id']}}">{{search['frequency']}}MHz: {{search['description']}}</a></li>
+      <li><a href="/?search={{search['id']}}">[{{search['start_time']}}] {{search['frequency']}}MHz: {{search['description']}}</a></li>
     {% endfor %}
   </ul>
 </div>
@@ -223,12 +223,12 @@
             lineCoordinates_{{measurement['id']}}.push(new google.maps.LatLng({{measurement['endpoint_latitude']}}, {{measurement['endpoint_longitude']}}));
     
             var infowindow_{{measurement['id']}} = new google.maps.InfoWindow({
-                content: '{{measurement['user']['call']}} (S{{ measurement['strength'] }})'
+                content: '[{{measurement['timestamp']}}] {{measurement['user']['call']}} (S{{ measurement['strength'] }})'
             });
     
             marker_{{measurement['id']}} = new google.maps.Marker({
                 position: new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}),
-                title: '{{measurement['user']['call']}} (S{{ measurement['strength'] }})',
+                title: '[{{measurement['timestamp']}}] {{measurement['user']['call']}} (S{{ measurement['strength'] }})',
                 map: map,
             });
             marker_{{measurement['id']}}.addListener('click', function() {
@@ -245,7 +245,7 @@
         } else {
             var tripPath = new google.maps.Marker({
                 position: {lat: {{measurement['latitude']}}, lng: {{measurement['longitude']}}},
-                title: '{{measurement['user']['call']}} (S{{ measurement['strength'] }})'
+                title: '[{{measurement['timestamp']}}] {{measurement['user']['call']}} (S{{ measurement['strength'] }})'
             });
         }
 

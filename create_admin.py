@@ -1,3 +1,5 @@
+import logging
+logging.basicConfig(level=logging.DEBUG)
 from app import db, models
 from hashlib import md5
 import sys
