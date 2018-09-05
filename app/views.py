@@ -3,7 +3,7 @@ from app import app, api, db, models
 from flask_restful import reqparse, abort, Api, Resource
 from flask import Flask, render_template, url_for, request, redirect
 from hashlib import md5
-from flask.ext.login import login_user, login_required, current_user, logout_user
+from flask_login import login_user, login_required, current_user, logout_user
 from functools import wraps
 import logging
 from logging import handlers
@@ -202,10 +202,12 @@ def web_app():
                                average_latitude=average_latitude,
                                searches=models.Search.query.all(),
                                user=current_user,
-                               datetime=datetime.now().strftime('%Y-%m-%d %H:%M')
+                               datetime=datetime.now().strftime('%Y-%m-%d %H:%M'),
+                               key=app.config["KEY"],
                                )
     else:
         return render_template('web_app.html', searches=models.Search.query.all(),
+                               key=app.config["KEY"],
                                user=current_user, datetime=datetime.now().strftime('%Y-%m-%d %H:%M'))
 
 

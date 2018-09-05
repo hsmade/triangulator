@@ -30,3 +30,17 @@ A web app to use measurements of multiple listeners in order to triangulate a (m
     - location
 
 All calls except api/users require basic auth.
+
+## Running
+
+build:
+
+    docker build -t triangulator
+
+run:
+
+    docker run -ti -p 8001:8001 -e KEY=googlemapsapikey triangulator <admin password>
+
+or:
+
+    docker run -ti -p 8001:8001 -v /path/to/app.db:/app/app.db -e KEY=googlemapsapikey triangulator <admin password>
