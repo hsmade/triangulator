@@ -96,6 +96,8 @@
                     console.log(event);
                     var heading = null;
                     if(event.absolute === true && event.alpha !== null) {
+	              //window.removeEventListener('deviceorientationabsolute', compassListener, false);
+                      //$("#heading").val(event.alpha + " " + event.beta + " " + event.gamma + " " + event.absolute);
                       heading = compassHeading(event.alpha, event.beta, event.gamma);
                       $("#heading").val(heading);
                     } else {
@@ -109,13 +111,13 @@
                   }
                   function headingCompass() {
                     if (compassOn) {
-                      window.removeEventListener('deviceorientation', compassListener, false);
+                      window.removeEventListener('deviceorientationabsolute', compassListener, false);
                       compassOn = false;
                       $("#heading_compass").attr('class', "btn btn-default")
                       $("#heading").attr("placeholder", "0-360");
                     } else {
-                      $("#heading").attr("placeholder", "Loading...");
-                      window.addEventListener('deviceorientation', compassListener, false);
+                      $("#heading").attr("placeholder", "waiting for compass...");
+                      window.addEventListener('deviceorientationabsolute', compassListener, false);
                       compassOn = true;
                       $("#heading_compass").attr('class', "btn btn-primary")
                     }
@@ -128,7 +130,7 @@
               </div>
               <input name="heading" type="text" class="form-control" id="heading" placeholder="0-360" required>
               <label for="strength">Signal strength:</label>
-              <input name="strength" type="text" class="form-control" id="strength" placeholder="1-9" required>
+              <input name="strength" type="text" class="form-control" id="strength" value="9" required>
               <hr />
               <label>Location:</label>
               <div class="btn-group" role="group" aria-label="Location">
