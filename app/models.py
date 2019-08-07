@@ -75,9 +75,27 @@ class Search(db.Model):
             start = datetime.fromtimestamp(0)
         if start and end:
             print start, end
-            result['measurements'] = [measurement.to_dict() for measurement in self.measurements if start <= measurement.timestamp <= end]
-        else:
-            result['measurements'] = [measurement.to_dict() for measurement in self.measurements]
+            filtered = [measurement for measurement in self.measurements if start <= measurement.timestamp <= end]
+            self.measurements = filtered
+        last = datetime.fromtimestamp(0)
+        first = datetime.now()
+        for measurement in self.measurements:
+            if measurement.timestamp > last:
+                last = measurement.timestamp
+            if measurement.timestamp < first:
+                first = measurement.timestamp
+        try:
+            step = 256.0 / (last - first).seconds
+        except Exception as e:
+            print e
+            step = 1
+        result['measurements'] = []
+        for measurement in self.measurements:
+            index = (measurement.timestamp - first).seconds * step
+            red = 255 - index
+            green = 0 + index
+            measurement.color = "#{:02x}{:02x}00".format(int(red), int(green))
+            result['measurements'].append(measurement.to_dict())
         print result
         return result
 
@@ -91,6 +109,7 @@ class Measurement(db.Model):
     strength = db.Column(db.Integer)
     heading = db.Column(db.Float)
     timestamp = db.Column(db.DateTime)
+    color = ""
 
     def __repr__(self):
         return '<Measurement {}/{}>'.format(self.heading, self.strength)
@@ -116,4 +135,5 @@ class Measurement(db.Model):
             'timestamp': str(self.timestamp),
             'endpoint_latitude': str(math.degrees(lat_end)),
             'endpoint_longitude': str(math.degrees(lon_end)),
+            'color': self.color,
         }

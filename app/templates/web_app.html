@@ -240,7 +240,7 @@
             var tripPath = new google.maps.Polyline({
                 path: lineCoordinates_{{measurement['id']}},
                 geodesic: true,
-                strokeColor: '#000',
+                strokeColor: '{{measurement['color']}}',
                 strokeOpacity: 1.0,
                 strokeWeight: 2
             });
