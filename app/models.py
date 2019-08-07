@@ -2,6 +2,17 @@ from app import db
 import math
 from datetime import datetime
 
+MARKERS = [
+    "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+    "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+    "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+    "https://maps.google.com/mapfiles/ms/icons/lightblue-dot.png",
+    "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+    "https://maps.google.com/mapfiles/ms/icons/pink-dot.png",
+    "https://maps.google.com/mapfiles/ms/icons/purple-dot.png",
+    "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+]
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -79,22 +90,29 @@ class Search(db.Model):
             self.measurements = filtered
         last = datetime.fromtimestamp(0)
         first = datetime.now()
+        calls = []
         for measurement in self.measurements:
+            if measurement.user_id not in calls:
+                calls.append(measurement.user_id)
             if measurement.timestamp > last:
                 last = measurement.timestamp
             if measurement.timestamp < first:
                 first = measurement.timestamp
         try:
-            step = 256.0 / (last - first).seconds
+            color_multiplier = 256.0 / (last - first).seconds
         except Exception as e:
             print e
-            step = 1
+            color_multiplier = 1
         result['measurements'] = []
         for measurement in self.measurements:
-            index = (measurement.timestamp - first).seconds * step
+            index = (measurement.timestamp - first).seconds * color_multiplier
             red = 255 - index
             green = 0 + index
-            measurement.color = "#{:02x}{:02x}00".format(int(red), int(green))
+            measurement.line_color = "#{:02x}{:02x}00".format(int(red), int(green))
+            try:
+                measurement.marker = MARKERS[calls.index(measurement.user_id)]
+            except IndexError:
+                measurement.marker = MARKERS[-1]
             result['measurements'].append(measurement.to_dict())
         print result
         return result
@@ -109,7 +127,8 @@ class Measurement(db.Model):
     strength = db.Column(db.Integer)
     heading = db.Column(db.Float)
     timestamp = db.Column(db.DateTime)
-    color = ""
+    line_color = ""
+    marker = ""
 
     def __repr__(self):
         return '<Measurement {}/{}>'.format(self.heading, self.strength)
@@ -135,5 +154,6 @@ class Measurement(db.Model):
             'timestamp': str(self.timestamp),
             'endpoint_latitude': str(math.degrees(lat_end)),
             'endpoint_longitude': str(math.degrees(lon_end)),
-            'color': self.color,
+            'line_color': self.line_color,
+            'marker': self.marker,
         }

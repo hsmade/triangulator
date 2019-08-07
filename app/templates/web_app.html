@@ -232,6 +232,7 @@
                 position: new google.maps.LatLng({{measurement['latitude']}}, {{measurement['longitude']}}),
                 title: '[{{measurement['timestamp']}}] {{measurement['user']['call']}} (S{{ measurement['strength'] }})',
                 map: map,
+                icon: { url: '{{measurement['marker']}}'}
             });
             marker_{{measurement['id']}}.addListener('click', function() {
                 infowindow_{{measurement['id']}}.open(map, marker_{{measurement['id']}});
@@ -240,7 +241,7 @@
             var tripPath = new google.maps.Polyline({
                 path: lineCoordinates_{{measurement['id']}},
                 geodesic: true,
-                strokeColor: '{{measurement['color']}}',
+                strokeColor: '{{measurement['line_color']}}',
                 strokeOpacity: 1.0,
                 strokeWeight: 2
             });
