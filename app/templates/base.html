@@ -22,7 +22,7 @@
   {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <div class="container">
+  <div class="container" style="height: 100vh">
      <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
            <div class="navbar-header">
@@ -68,7 +68,7 @@
            </div><!--/.nav-collapse -->
         </div>
       </nav>
-    <div style="position: relative" class="jumbotron">
+    <div style="position: relative; height: 100%" class="jumbotron">
       <br />
       {% block content %}
       {% endblock %}
