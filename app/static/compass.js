@@ -31,7 +31,7 @@ function compassHeading(alpha, beta, gamma) {
   // Convert radians to degrees
   compassHeading *= 180 / Math.PI;
 
-  console.log('Compass: ' + compassHeading);
+  // console.log('Compass: ' + compassHeading);
   return Math.round(compassHeading);
 
 }

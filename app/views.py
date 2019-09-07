@@ -146,15 +146,17 @@ class Search(Resource):
         """
         args = measurement_parser.parse_args()
         logger.debug('Search.post(id={}) with args: {}'.format(id, args))
+        if not args.timestamp:
+            timestamp = datetime.now()
+        else:
+            timestamp = datetime.strptime(args.timestamp, '%Y-%m-%d %H:%M')
         new_measurement = models.Measurement(search_id=id,
                                              heading=float(args.heading),
                                              strength=int(args.strength),
-                                             timestamp=datetime.strptime(args.timestamp, '%Y-%m-%d %H:%M'),
+                                             timestamp=timestamp,
                                              latitude=float(args.latitude),
                                              longitude=float(args.longitude),
                                              user_id=current_user.get_id())
-        if new_measurement.user_id == 2:  # bug fix for lenovo compass
-            new_measurement.heading -= 4
         db.session.add(new_measurement)
         db.session.commit()
         return redirect(url_for('web_app', search=args.search))

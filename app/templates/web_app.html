@@ -26,6 +26,12 @@
     <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#searchModal">
       Create new search
     </button>
+    {% if search: %}
+    {% if user.call == 'admin' or user.id == search.user_id: %}
+    <a href="/search/{{search.id}}/delete" class="btn btn-primary btn-lg" role="button">Remove search</a>
+    {% endif %}
+    {% endif %}
+
 
     <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel">
       <div class="modal-dialog" role="document">
@@ -52,6 +58,145 @@
   </div>
 
 {% if search: %}
+  <script language="JavaScript">
+    var compassOn = false;
+    var myLocationMarker;
+    var myLocationPath;
+    var myLocation;
+    var headingBias = 0;
+
+    function headingGPS() {
+      $("#heading_gps").attr('class', "btn btn-primary")
+      $("#heading").attr("placeholder","Loading...");
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showHeading);
+      };
+      function showHeading(position) {
+        // console.log(position);
+        if (position.coords.heading) {
+          $("#heading").val(position.coords.heading);
+          $("#heading").attr("placeholder","0-360");
+        } else {
+          $("#heading").attr('placeholder', 'GPS heading not available');
+          $("#heading_gps").attr('class', "btn btn-default");
+
+        }
+      }
+      return true;
+    }
+    function compassListener(event) {
+      var heading = null;
+      if(event.absolute === true && event.alpha !== null) {
+        heading = compassHeading(event.alpha, event.beta, event.gamma);
+        heading += headingBias;
+        $("#heading").val(heading);
+        $("#headingMob").val(heading);
+        if (myLocationMarker) {
+          var locationIcon = myLocationMarker.get('icon');
+          locationIcon.rotation = heading;
+          myLocationMarker.set('icon', locationIcon);
+          drawMyLocationPath(myLocation, heading);
+        }
+      } else {
+        headingCompass();
+        $("#heading").attr('placeholder', 'Compass not available');
+        $("#headingMob").attr('placeholder', 'Compass not available');
+      }
+    }
+
+    function headingNone() {
+      $("#heading").val(-1);
+      $("#headingMob").val(-1);
+    }
+
+    function headingCompass() {
+      if (compassOn) {
+        window.removeEventListener('deviceorientationabsolute', compassListener, false);
+        compassOn = false;
+        $("#heading_compass").attr('class', "btn btn-default");
+        $("#heading").attr("placeholder", "0-360");
+        $("#headingMob").attr("placeholder", "0-360");
+      } else {
+        $("#heading").attr("placeholder", "waiting for compass...");
+        $("#headingMob").attr("placeholder", "waiting for compass...");
+        window.addEventListener('deviceorientationabsolute', compassListener, false);
+        compassOn = true;
+        $("#heading_compass").attr('class', "btn btn-primary")
+      }
+    }
+
+    function locationGPS() {
+      $("#location_gps").attr('class', "btn btn-primary");
+      $("#longitude").attr("placeholder","Loading...");
+      $("#longitudeMob").attr("placeholder","Loading...");
+      $("#latitude").attr("placeholder","Loading...");
+      $("#latitudeMob").attr("placeholder","Loading...");
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition);
+      };
+      function showPosition(position) {
+        // console.log(position);
+        $("#longitude").val(position.coords.longitude);
+        $("#latitude").val(position.coords.latitude);
+        $("#longitudeMob").val(position.coords.longitude);
+        $("#latitudeMob").val(position.coords.latitude);
+        $("#longitude").attr("placeholder","Longitude");
+        $("#latitude").attr("placeholder","Latitude");
+        $("#longitudeMob").attr("placeholder","Longitude");
+        $("#latitudeMob").attr("placeholder","Latitude");
+        $("#location_gps").attr('class', "btn btn-default");
+        setMyLocation(position.coords.latitude, position.coords.longitude);
+      }
+      return true;
+    }
+
+    function setMyLocation(latitude, longitude) {
+      myLocation = new google.maps.LatLng(latitude, longitude);
+      map.setCenter(new google.maps.LatLng(latitude - 0.0001, longitude));
+      if (myLocationMarker) myLocationMarker.setPosition(myLocation);
+    }
+
+    $(function () {
+      $('#datetimepicker1').datetimepicker({
+        sideBySide: true,
+        format: 'YYYY-MM-DD HH:mm',
+      });
+    });
+
+    function addUserLocation() {
+      myLocationMarker = new google.maps.Marker({
+        clickable: false,
+        icon: {
+          path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
+          strokeColor: '#3333FF',
+          strokeWeight: 1,
+          scale: 4
+        },
+        shadow: null,
+        zIndex: 999,
+        title: "You",
+        map: map
+      });
+      map.setZoom(19);
+    }
+
+    function drawMyLocationPath(location, heading) {
+      console.log("Called with:", location, heading);
+      if (!location || !heading) return;
+      if (myLocationPath) {
+        myLocationPath.setMap(null);
+      }
+      myLocationPath = new google.maps.Polyline({
+        path: [location, new google.maps.geometry.spherical.computeOffset(location, 50, heading)],
+        geodesic: true,
+        strokeColor: '#3333FF',
+        strokeOpacity: 1.0,
+        strokeWeight: 2
+      });
+      myLocationPath.setMap(map);
+    }
+  </script>
+
   <div id="new_measurement">
     <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#measurementModal">
       Submit new measurement
@@ -69,61 +214,6 @@
             <div class="modal-body">
               <label for="heading">Heading:</label>
               <div class="btn-group" role="group" aria-label="Heading">
-                <script language="JavaScript">
-                  function headingGPS() {
-                    $("#heading_gps").attr('class', "btn btn-primary")
-                    $("#heading").attr("placeholder","Loading...");
-                    if (navigator.geolocation) {
-                      navigator.geolocation.getCurrentPosition(showHeading);
-                    };
-                    function showHeading(position) {
-                      console.log(position);
-                      if (position.coords.heading) {
-                        $("#heading").val(position.coords.heading);
-                        $("#heading").attr("placeholder","0-360");
-                      } else {
-                        $("#heading").attr('placeholder', 'GPS heading not available');
-                        $("#heading_gps").attr('class', "btn btn-default")
-
-                      }
-                    }
-                    return true;
-                  }
-                  compassOn = false;
-
-                  function compassListener(event) {
-                    console.log('listener called:');
-                    console.log(event);
-                    var heading = null;
-                    if(event.absolute === true && event.alpha !== null) {
-	              //window.removeEventListener('deviceorientationabsolute', compassListener, false);
-                      //$("#heading").val(event.alpha + " " + event.beta + " " + event.gamma + " " + event.absolute);
-                      heading = compassHeading(event.alpha, event.beta, event.gamma);
-                      $("#heading").val(heading);
-                    } else {
-                      headingCompass()
-                      $("#heading").attr('placeholder', 'Compass not available');
-                    }
-                  }
-
-                  function headingNone() {
-                      $("#heading").val(-1);
-                  }
-                  function headingCompass() {
-                    if (compassOn) {
-                      window.removeEventListener('deviceorientationabsolute', compassListener, false);
-                      compassOn = false;
-                      $("#heading_compass").attr('class', "btn btn-default")
-                      $("#heading").attr("placeholder", "0-360");
-                    } else {
-                      $("#heading").attr("placeholder", "waiting for compass...");
-                      window.addEventListener('deviceorientationabsolute', compassListener, false);
-                      compassOn = true;
-                      $("#heading_compass").attr('class', "btn btn-primary")
-                    }
-                  }
-                </script>
-
                 <button type="button" id="heading_gps" class="btn btn-default" onclick="headingGPS()">GPS</button>
                 <button type="button" id="heading_compass" class="btn btn-default" onclick="headingCompass()">Compass</button>
                 <button type="button" id="heading_none" class="btn btn-default" onclick="headingNone()">No heading</button>
@@ -134,51 +224,22 @@
               <hr />
               <label>Location:</label>
               <div class="btn-group" role="group" aria-label="Location">
-                <script language="JavaScript">
-                  function locationGPS() {
-                    $("#location_gps").attr('class', "btn btn-primary")
-                    $("#longitude").attr("placeholder","Loading...");
-                    $("#latitude").attr("placeholder","Loading...");
-                    if (navigator.geolocation) {
-                      navigator.geolocation.getCurrentPosition(showPosition);
-                    };
-                    function showPosition(position) {
-                      // console.log(position);
-                      $("#longitude").val(position.coords.longitude);
-                      $("#latitude").val(position.coords.latitude);
-                    $("#longitude").attr("placeholder","Longitude");
-                    $("#latitude").attr("placeholder","Latitude");
-                      $("#location_gps").attr('class', "btn btn-default")
-                    }
-                    return true;
-                  }
-                </script>
                 <button type="button" id="location_gps" class="btn btn-default" onclick="locationGPS()">GPS</button>
               </div><br />
-              <!--<label for="longitude">Longitude:</label>-->
               <input name="longitude" type="text" class="form-control" id="longitude" placeholder="Longitude" required>
-              <!--<label for="latitude">Latitude:</label>-->
               <input name="latitude" type="text" class="form-control" id="latitude" placeholder="Latitude" required>
               <hr />
               <div class="container">
                 <div class="row">
-                    <div class="form-group">
-                            <label for="timestamp">Date / time:</label>
-                        <div class='input-group date' id='datetimepicker1'>
-                            <input name="timestamp" type="text" class="form-control" value="{{datetime}}" />
-                            <span class="input-group-addon">
-                                <span class="glyphicon glyphicon-calendar"></span>
-                            </span>
-                        </div>
+                  <div class="form-group">
+                    <label for="timestamp">Date / time:</label>
+                    <div class='input-group date' id='datetimepicker1'>
+                      <input name="timestamp" type="text" class="form-control" value="{{datetime}}" />
+                      <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                      </span>
                     </div>
-                    <script type="text/javascript">
-                        $(function () {
-                            $('#datetimepicker1').datetimepicker({
-                            sideBySide: true,
-                            format: 'YYYY-MM-DD HH:mm',
-                            });
-                        });
-                    </script>
+                  </div>
                 </div>
               </div>
             </div>
@@ -190,33 +251,75 @@
         </div>
       </div>
     </div>
+
     <script language="JavaScript">
       $('#measurementModal').on('shown.bs.modal', function () {
         $('#measurementInput').focus()
       })
     </script>
   </div>
+
+  <div id="new_measurement_mob">
+    <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#measurementMobModal">
+      Submit new mobile measurement
+    </button>
+
+    <div class="modal fade" id="measurementMobModal" tabindex="-1" role="dialog" aria-labelledby="measurementMobModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <form action="/searches/{{search['id']}}" method="post">
+            <input type="hidden" name="search" value="{{search['id']}}">
+            <div class="modal-body">
+              <label for="heading">Heading:</label>
+              <input name="heading" style="width: 3em;" type="text" id="headingMob" placeholder="0-360" required>
+              <button type="button" class="btn btn-default" onclick="headingBias+=1">+</button>
+              <button type="button" class="btn btn-default" onclick="headingBias-=1">-</button>
+              <br/>
+              <label for="strength">Signal:</label>
+              <input name="strength" type="text" style="width: 3em;" id="strengthMob" value="9" required>
+              <br/>
+              <input name="longitude" type="text" style="width: 7em;" id="longitudeMob" placeholder="lon" required>
+              <input name="latitude" type="text" style="width: 7em;" id="latitudeMob" placeholder="lat" required>
+              <button type="button" class="btn btn-default" onclick="locationGPS()">refresh</button>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script language="JavaScript">
+      $('#measurementMobModal').on('shown.bs.modal', function () {
+        $('#measurementMobInput').focus();
+        if (myLocationMarker) myLocationMarker.setMap(null);
+        if (myLocationPath) myLocationPath.setMap(null);
+        if (!compassOn) headingCompass();
+        locationGPS();
+        addUserLocation();
+      })
+    </script>
+  </div>
+
 {% endif %}
 </div>
 
 {% if search %}
-  {%  if user.call == 'admin' or user.id == search.user_id %}
-      <a href="/search/{{search.id}}/delete" class="btn btn-primary btn-lg" role="button">Remove search</a>
-  {% endif %}
-  {% if search['measurements'] %}
     <div id="map-canvas" style="width: 100%; height: 100%; margin: 0px; padding: 0px;"></div>
-    <script language="JavaScript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&key={{key}}"></script>
+    <script language="JavaScript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&key={{key}}&libraries=geometry"></script>
     <script language="JavaScript">
     var map;
     function initialize() {
         var mapOptions = {
             zoom: 11,
-            center: new google.maps.LatLng({{average_latitude}},{{average_longitude}})
         };
         map = new google.maps.Map(document.getElementById('map-canvas'),
             mapOptions);
         var infowindow = new google.maps.InfoWindow();
 
+  {% if search['measurements'] %}
     {% for measurement in search['measurements']: %}
 
         if ({{measurement['heading']}} >= 0) {
@@ -254,10 +357,11 @@
 
         tripPath.setMap(map);
     {% endfor %}
+  {% endif %}
     }
     initialize();
+    locationGPS();
     </script>
-  {% endif %}
 {% endif %}
 
 {% endblock %}
