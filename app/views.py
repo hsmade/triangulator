@@ -153,6 +153,8 @@ class Search(Resource):
                                              latitude=float(args.latitude),
                                              longitude=float(args.longitude),
                                              user_id=current_user.get_id())
+        if new_measurement.user_id == 2:  # bug fix for lenovo compass
+            new_measurement.heading -= 4
         db.session.add(new_measurement)
         db.session.commit()
         return redirect(url_for('web_app', search=args.search))
